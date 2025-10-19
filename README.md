@@ -4,6 +4,8 @@
 
 gistt is a terminal-native AI email client that shows you the gist — so you can focus on real progress.
 
+> "tab tab tab for emails."
+
 ![gistt CLI walkthrough](media/gistt-demo.gif)
 
 ## Why gistt?
@@ -36,7 +38,7 @@ brew install gistt
 
 Enable the Gmail API in your Google Cloud project and download the OAuth client JSON.
 
-- Set desktop app.
+- Set application type to 'Desktop app'.
 - Add the accounts you want to link to `APIs & Services → OAuth consent screen → Test users`.
 
 ### 2. Place credentials
@@ -58,10 +60,12 @@ By default tokens are written to `~/.local/share/gistt/accounts/<email>/token.js
 Set the Gemini API key in your environment (e.g. `.env`):
 
 ```bash
-Get your key from https://aistudio.google.com/apikey
+# Get your key from https://aistudio.google.com/apikey
 export GEMINI_API_KEY="YOUR_API_KEY"
 ```
+
 **Note**: The CLI stores persisted state under `~/.local/share/gistt`. Remove that directory if you need a clean slate.
+There is no database for this application. We don't store anything.
 
 ## Usage
 
@@ -71,11 +75,9 @@ After installing via Homebrew, launch the client from any terminal:
 gistt
 ```
 
-When working from a source checkout, run `python -m gistt.ui.cli` for the same experience.
-
 **Keyboard shortcuts**:
 
-- `g` — Fetch new gists
+- `g` — Fetch new gistts
 - `tab` — Execute recommended action
 - `s` — Mark as read
 - `e` — Archive
@@ -84,13 +86,7 @@ When working from a source checkout, run `python -m gistt.ui.cli` for the same e
 - `h` — Toggle filter
 - `q` — Quit
 
-## Design notes
-
-- **UI surface** lives in the Rich-based CLI (`src/gistt/ui/*`). Views translate domain objects into layout primitives, own key handling, and never touch persistence or network APIs directly.
-- **Gmail domain** owns account management, OAuth, thread fetching, and label mutations. The pieces live under `src/gistt/services/gmail_accounts.py` and `src/gistt/services/gmail_ops.py`.
-- **Gist domain** centers on models, settings, and cached results. `GistProducer` coordinates GenAI calls, while `GistCacheStore` persists summaries and states.
-- **GenAI integration** (Gemini today) turns email threads into `ActionGroupRec` plus summary text through `GistProducer`, which wraps `GenAIOps`.
-- **Cross-cutting utilities** sit at the edges and depend only on public interfaces, keeping each domain replaceable.
+By default, we only fetch unread emails in the past 10 days. We also predefine action groups. In the future, users should be able to configure categories and preferences via a simple settings.json file.
 
 ## Contributing
 
@@ -101,7 +97,17 @@ gistt is early-stage and designed to be hackable. We're looking for tinkerers to
 - Slash commands for power users
 - More AI model backends
 
-Email maximalmargin@gmail.com to ask about contribution. PRs welcome.
+Email <maximalmargin@gmail.com> to ask about contributing. PRs welcome.
+
+## Inspirations
+
+- [AI Horseless Carriages](https://koomen.dev/essays/horseless-carriages/) by Pete Koomen
+- Claude Code, Codex CLI, and Gemini CLI
+- [Google's mission](https://www.google.com/intl/en_us/search/howsearchworks/our-approach/) is to organize the world's information and make it universally accessible and useful
+- [AI Written, AI Read](https://marketoonist.com/2023/03/ai-written-ai-read.html)
+- Squid Game
+- Hilma af Klint
+- Ready Player One
 
 ## Artifact Preview
 

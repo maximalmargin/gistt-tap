@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>gistt - artifact</title>
     <style>
         * {
@@ -11,16 +11,30 @@
             box-sizing: border-box;
         }
         
-        body {
-            background: #0a0e27;
-            font-family: 'Courier New', monospace;
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
             overflow: hidden;
-            width: 100vw;
-            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #0a0e27;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            -webkit-overflow-scrolling: touch;
         }
         
         canvas {
             display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
         
         /* Subtle scanlines for retro terminal effect */
@@ -43,7 +57,6 @@
         }
         
         .title {
-      font-size: 40px;
             position: absolute;
             bottom: 15%;
             left: 50%;
@@ -54,6 +67,33 @@
             text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
             letter-spacing: 0.2em;
             z-index: 10;
+            padding: 0 20px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 48px;
+                letter-spacing: 0.15em;
+                bottom: 12%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .title {
+                font-size: 36px;
+                letter-spacing: 0.1em;
+                bottom: 10%;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .title {
+                font-size: 28px;
+                letter-spacing: 0.08em;
+            }
         }
     </style>
 </head>
@@ -66,9 +106,25 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         
-        // Set canvas size
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        // Function to set proper canvas size for all devices
+        function setCanvasSize() {
+            // Use clientWidth/clientHeight for accurate dimensions
+            const width = window.innerWidth || document.documentElement.clientWidth;
+            const height = window.innerHeight || document.documentElement.clientHeight;
+            
+            // Set canvas internal resolution to match display size
+            canvas.width = width;
+            canvas.height = height;
+            
+            return { width, height };
+        }
+        
+        // Set initial canvas size
+        const { width: initialWidth, height: initialHeight } = setCanvasSize();
+        
+        // Responsive settings based on viewport
+        const isMobile = initialWidth <= 768;
+        const isSmallMobile = initialWidth <= 480;
         
         // Color palette (matching app design)
         // Background: #0a0e27 (10, 14, 39)
@@ -122,7 +178,9 @@
             
             resetPosition() {
                 this.layer = Math.random();
-                this.scale = 0.65 + Math.random() * 0.6;
+                // Scale down email blocks on mobile
+                const mobileScale = isSmallMobile ? 0.6 : (isMobile ? 0.75 : 1.0);
+                this.scale = (0.65 + Math.random() * 0.6) * mobileScale;
                 this.width = (120 + Math.random() * 180) * this.scale;
                 this.height = (60 + Math.random() * 40) * this.scale;
                 this.x = -this.width - Math.random() * canvas.width * 0.25;
@@ -244,9 +302,11 @@
             constructor() {
                 this.x = canvas.width / 2;
                 this.y = canvas.height / 2;
-                this.radius = 60;
+                // Responsive radius based on screen size
+                this.radius = isSmallMobile ? 40 : (isMobile ? 50 : 60);
                 this.pulse = 0;
-                this.ease = 0.08;
+                // More responsive on mobile for better touch following
+                this.ease = isMobile ? 0.15 : 0.08;
                 this.currentRadius = this.radius;
             }
             
@@ -254,8 +314,11 @@
                 this.pulse += 0.02;
                 const targetX = pointerTarget.active ? pointerTarget.x : canvas.width / 2;
                 const targetY = pointerTarget.active ? pointerTarget.y : canvas.height / 2;
-                this.x += (targetX - this.x) * this.ease;
-                this.y += (targetY - this.y) * this.ease;
+                
+                // Use higher ease factor on mobile when touch is active
+                const currentEase = (isMobile && pointerTarget.active) ? 0.2 : this.ease;
+                this.x += (targetX - this.x) * currentEase;
+                this.y += (targetY - this.y) * currentEase;
                 this.currentRadius = this.radius + Math.sin(this.pulse) * 5;
             }
             
@@ -311,7 +374,8 @@
                 this.type = type; // 'square', 'triangle', 'arrow'
                 this.color = color;
                 this.index = index;
-                this.size = 32;
+                // Responsive size based on screen size
+                this.size = isSmallMobile ? 24 : (isMobile ? 28 : 32);
             }
             
             update() {
@@ -323,8 +387,8 @@
                 ctx.translate(this.x, this.y);
                 
                 ctx.shadowBlur = 15;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.fillStyle = this.color;
                 
                 const boxSize = this.size;
                 const halfBox = boxSize / 2;
@@ -380,8 +444,9 @@
         }
         
         const positionShapes = (shapeList) => {
-            const rightPadding = 80;
-            const gap = 36;
+            // Responsive padding and gap based on screen size
+            const rightPadding = isSmallMobile ? 30 : (isMobile ? 50 : 80);
+            const gap = isSmallMobile ? 24 : (isMobile ? 30 : 36);
             const heights = shapeList.map(shape => shape.getMetrics().height);
             const totalHeight = heights.reduce((sum, h) => sum + h, 0) + gap * (shapeList.length - 1);
             let currentY = canvas.height / 2 - totalHeight / 2;
@@ -453,9 +518,12 @@
         }
         
         // Initialize elements - more blocks for overwhelming effect
-        const emailBlocks = Array.from({ length: 70 }, () => new EmailBlock());
+        // Reduce count on mobile for better performance
+        const emailBlockCount = isSmallMobile ? 30 : (isMobile ? 45 : 70);
+        const particleCount = isSmallMobile ? 15 : (isMobile ? 25 : 35);
+        const emailBlocks = Array.from({ length: emailBlockCount }, () => new EmailBlock());
         const lens = new TransformationLens();
-        const particles = Array.from({ length: 35 }, () => new Particle());
+        const particles = Array.from({ length: particleCount }, () => new Particle());
         const shapeConfigs = [
             { type: 'square', color: '#ff6ec7' },
             { type: 'triangle', color: '#f9f871' },
@@ -467,8 +535,11 @@
         
         window.addEventListener('mousemove', (event) => {
             const rect = canvas.getBoundingClientRect();
-            pointer.x = event.clientX - rect.left;
-            pointer.y = event.clientY - rect.top;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            pointer.x = (event.clientX - rect.left) * scaleX;
+            pointer.y = (event.clientY - rect.top) * scaleY;
             pointer.active = true;
         });
         
@@ -479,6 +550,50 @@
         window.addEventListener('blur', () => {
             pointer.active = false;
         });
+        
+        // Touch support for mobile devices
+        function handleTouch(event) {
+            event.preventDefault();
+            if (event.touches.length > 0) {
+                const touch = event.touches[0];
+                
+                // Get accurate canvas position accounting for all offsets
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                // Calculate touch position relative to canvas with proper scaling
+                pointer.x = (touch.clientX - rect.left) * scaleX;
+                pointer.y = (touch.clientY - rect.top) * scaleY;
+                pointer.active = true;
+            }
+        }
+        
+        canvas.addEventListener('touchstart', handleTouch, { passive: false });
+        canvas.addEventListener('touchmove', handleTouch, { passive: false });
+        
+        canvas.addEventListener('touchend', (event) => {
+            event.preventDefault();
+            pointer.active = false;
+        }, { passive: false });
+        
+        canvas.addEventListener('touchcancel', (event) => {
+            event.preventDefault();
+            pointer.active = false;
+        }, { passive: false });
+        
+        // Prevent default touch behavior on the document to avoid scrolling
+        document.body.addEventListener('touchstart', (e) => {
+            if (e.target === canvas) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.target === canvas) {
+                e.preventDefault();
+            }
+        }, { passive: false });
         
         // Animation loop
         function animate() {
@@ -520,20 +635,59 @@
                 shape.draw();
             });
             
+            // DEBUG: Draw touch/pointer indicator when active
+            if (pointer.active) {
+                ctx.save();
+                // Draw a small crosshair at the exact pointer position
+                ctx.strokeStyle = '#ff00ff';
+                ctx.lineWidth = 2;
+                const crossSize = 20;
+                
+                // Horizontal line
+                ctx.beginPath();
+                ctx.moveTo(pointer.x - crossSize, pointer.y);
+                ctx.lineTo(pointer.x + crossSize, pointer.y);
+                ctx.stroke();
+                
+                // Vertical line
+                ctx.beginPath();
+                ctx.moveTo(pointer.x, pointer.y - crossSize);
+                ctx.lineTo(pointer.x, pointer.y + crossSize);
+                ctx.stroke();
+                
+                // Small circle
+                ctx.beginPath();
+                ctx.arc(pointer.x, pointer.y, 5, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+            
             requestAnimationFrame(animate);
         }
         
-        // Handle resize
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        // Handle resize and orientation changes
+        function handleResize() {
+            // Update canvas size
+            const { width, height } = setCanvasSize();
             
-            // Update lens position
+            // Update responsive settings
+            const newIsMobile = width <= 768;
+            const newIsSmallMobile = width <= 480;
+            
+            // Update lens position, radius, and responsiveness
             lens.x = canvas.width / 2;
             lens.y = canvas.height / 2;
+            lens.radius = newIsSmallMobile ? 40 : (newIsMobile ? 50 : 60);
+            lens.currentRadius = lens.radius;
+            lens.ease = newIsMobile ? 0.15 : 0.08;
             pointer.x = canvas.width / 2;
             pointer.y = canvas.height / 2;
             pointer.active = false;
+            
+            // Update shape sizes
+            shapes.forEach(shape => {
+                shape.size = newIsSmallMobile ? 24 : (newIsMobile ? 28 : 32);
+            });
             
             // Update clear shapes positions
             positionShapes(shapes);
@@ -543,6 +697,12 @@
                 particle.targetX = canvas.width * 0.5;
                 particle.targetY = canvas.height * 0.5;
             });
+        }
+        
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', () => {
+            // Small delay to ensure viewport has updated
+            setTimeout(handleResize, 100);
         });
         
         // Start animation
