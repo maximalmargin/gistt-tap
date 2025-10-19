@@ -122,6 +122,16 @@
         // Set initial canvas size
         const { width: initialWidth, height: initialHeight } = setCanvasSize();
         
+        // Debug: Log canvas setup
+        console.log('Canvas Setup:', {
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            windowWidth: window.innerWidth,
+            windowHeight: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+            canvasRect: canvas.getBoundingClientRect()
+        });
+        
         // Responsive settings based on viewport
         const isMobile = initialWidth <= 768;
         const isSmallMobile = initialWidth <= 480;
@@ -535,11 +545,14 @@
         
         window.addEventListener('mousemove', (event) => {
             const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
             
-            pointer.x = (event.clientX - rect.left) * scaleX;
-            pointer.y = (event.clientY - rect.top) * scaleY;
+            // Direct mapping - canvas resolution matches display size
+            pointer.x = event.clientX - rect.left;
+            pointer.y = event.clientY - rect.top;
+            
+            // Clamp to canvas bounds
+            pointer.x = Math.max(0, Math.min(pointer.x, canvas.width));
+            pointer.y = Math.max(0, Math.min(pointer.y, canvas.height));
             pointer.active = true;
         });
         
@@ -557,15 +570,33 @@
             if (event.touches.length > 0) {
                 const touch = event.touches[0];
                 
-                // Get accurate canvas position accounting for all offsets
+                // Since canvas is fixed position and matches window size exactly,
+                // we can use pageX/pageY directly (which equals clientX/clientY for fixed elements)
+                // But to be safe, calculate relative to canvas position
                 const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
                 
-                // Calculate touch position relative to canvas with proper scaling
-                pointer.x = (touch.clientX - rect.left) * scaleX;
-                pointer.y = (touch.clientY - rect.top) * scaleY;
+                // Direct mapping - no scaling needed since canvas resolution matches display size
+                pointer.x = touch.clientX - rect.left;
+                pointer.y = touch.clientY - rect.top;
+                
+                // Clamp to canvas bounds for safety
+                pointer.x = Math.max(0, Math.min(pointer.x, canvas.width));
+                pointer.y = Math.max(0, Math.min(pointer.y, canvas.height));
                 pointer.active = true;
+                
+                // Debug log
+                console.log('Touch:', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    rectLeft: rect.left,
+                    rectTop: rect.top,
+                    pointerX: pointer.x,
+                    pointerY: pointer.y,
+                    canvasWidth: canvas.width,
+                    canvasHeight: canvas.height,
+                    rectWidth: rect.width,
+                    rectHeight: rect.height
+                });
             }
         }
         
@@ -638,10 +669,12 @@
             // DEBUG: Draw touch/pointer indicator when active
             if (pointer.active) {
                 ctx.save();
-                // Draw a small crosshair at the exact pointer position
+                // Draw a large, highly visible crosshair at the exact pointer position
                 ctx.strokeStyle = '#ff00ff';
-                ctx.lineWidth = 2;
-                const crossSize = 20;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff00ff';
+                const crossSize = 40;
                 
                 // Horizontal line
                 ctx.beginPath();
@@ -655,10 +688,18 @@
                 ctx.lineTo(pointer.x, pointer.y + crossSize);
                 ctx.stroke();
                 
-                // Small circle
+                // Circle
                 ctx.beginPath();
-                ctx.arc(pointer.x, pointer.y, 5, 0, Math.PI * 2);
+                ctx.arc(pointer.x, pointer.y, 10, 0, Math.PI * 2);
                 ctx.stroke();
+                
+                // Draw coordinates
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ff00ff';
+                ctx.font = '14px monospace';
+                const coordText = `(${Math.round(pointer.x)}, ${Math.round(pointer.y)})`;
+                ctx.fillText(coordText, pointer.x + 15, pointer.y - 15);
+                
                 ctx.restore();
             }
             
