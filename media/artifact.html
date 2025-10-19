@@ -108,15 +108,16 @@
         
         // Function to set proper canvas size for all devices
         function setCanvasSize() {
-            // Use clientWidth/clientHeight for accurate dimensions
-            const width = window.innerWidth || document.documentElement.clientWidth;
-            const height = window.innerHeight || document.documentElement.clientHeight;
+            // Get display dimensions
+            const displayWidth = window.innerWidth || document.documentElement.clientWidth;
+            const displayHeight = window.innerHeight || document.documentElement.clientHeight;
             
-            // Set canvas internal resolution to match display size
-            canvas.width = width;
-            canvas.height = height;
+            // Don't use devicePixelRatio scaling - keep 1:1 mapping for simpler coordinates
+            // Set canvas internal resolution to match display size exactly
+            canvas.width = displayWidth;
+            canvas.height = displayHeight;
             
-            return { width, height };
+            return { width: displayWidth, height: displayHeight };
         }
         
         // Set initial canvas size
@@ -533,13 +534,20 @@
         positionShapes(shapes);
         const pointer = { x: canvas.width / 2, y: canvas.height / 2, active: false };
         
-        window.addEventListener('mousemove', (event) => {
+        const updatePointerFromClient = (clientX, clientY) => {
             const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+            const scaleX = rect.width ? canvas.width / rect.width : 1;
+            const scaleY = rect.height ? canvas.height / rect.height : 1;
             
-            pointer.x = (event.clientX - rect.left) * scaleX;
-            pointer.y = (event.clientY - rect.top) * scaleY;
+            pointer.x = (clientX - rect.left) * scaleX;
+            pointer.y = (clientY - rect.top) * scaleY;
+            
+            pointer.x = Math.max(0, Math.min(pointer.x, canvas.width));
+            pointer.y = Math.max(0, Math.min(pointer.y, canvas.height));
+        };
+        
+        window.addEventListener('mousemove', (event) => {
+            updatePointerFromClient(event.clientX, event.clientY);
             pointer.active = true;
         });
         
@@ -557,14 +565,7 @@
             if (event.touches.length > 0) {
                 const touch = event.touches[0];
                 
-                // Get accurate canvas position accounting for all offsets
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                
-                // Calculate touch position relative to canvas with proper scaling
-                pointer.x = (touch.clientX - rect.left) * scaleX;
-                pointer.y = (touch.clientY - rect.top) * scaleY;
+                updatePointerFromClient(touch.clientX, touch.clientY);
                 pointer.active = true;
             }
         }
@@ -634,33 +635,6 @@
                 shape.update();
                 shape.draw();
             });
-            
-            // DEBUG: Draw touch/pointer indicator when active
-            if (pointer.active) {
-                ctx.save();
-                // Draw a small crosshair at the exact pointer position
-                ctx.strokeStyle = '#ff00ff';
-                ctx.lineWidth = 2;
-                const crossSize = 20;
-                
-                // Horizontal line
-                ctx.beginPath();
-                ctx.moveTo(pointer.x - crossSize, pointer.y);
-                ctx.lineTo(pointer.x + crossSize, pointer.y);
-                ctx.stroke();
-                
-                // Vertical line
-                ctx.beginPath();
-                ctx.moveTo(pointer.x, pointer.y - crossSize);
-                ctx.lineTo(pointer.x, pointer.y + crossSize);
-                ctx.stroke();
-                
-                // Small circle
-                ctx.beginPath();
-                ctx.arc(pointer.x, pointer.y, 5, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.restore();
-            }
             
             requestAnimationFrame(animate);
         }
