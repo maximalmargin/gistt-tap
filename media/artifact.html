@@ -123,6 +123,16 @@
         // Set initial canvas size
         const { width: initialWidth, height: initialHeight } = setCanvasSize();
         
+        // Debug: Log canvas setup
+        console.log('Canvas Setup:', {
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            windowWidth: window.innerWidth,
+            windowHeight: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+            canvasRect: canvas.getBoundingClientRect()
+        });
+        
         // Responsive settings based on viewport
         const isMobile = initialWidth <= 768;
         const isSmallMobile = initialWidth <= 480;
@@ -567,6 +577,20 @@
                 
                 updatePointerFromClient(touch.clientX, touch.clientY);
                 pointer.active = true;
+                
+                // Debug log
+                console.log('Touch:', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    rectLeft: rect.left,
+                    rectTop: rect.top,
+                    pointerX: pointer.x,
+                    pointerY: pointer.y,
+                    canvasWidth: canvas.width,
+                    canvasHeight: canvas.height,
+                    rectWidth: rect.width,
+                    rectHeight: rect.height
+                });
             }
         }
         
