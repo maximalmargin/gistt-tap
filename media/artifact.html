@@ -304,7 +304,7 @@
                 this.x = canvas.width / 2;
                 this.y = canvas.height / 2;
                 // Responsive radius based on screen size
-                this.radius = isSmallMobile ? 35 : (isMobile ? 45 : 60);
+                this.radius = isSmallMobile ? 35 : (isMobile ? 35 : 40);
                 this.pulse = 0;
                 // More responsive on mobile for better touch following
                 this.ease = isMobile ? 0.15 : 0.08;
@@ -652,7 +652,7 @@
             // Update lens position, radius, and responsiveness
             lens.x = canvas.width / 2;
             lens.y = canvas.height / 2;
-            lens.radius = newIsSmallMobile ? 35 : (newIsMobile ? 45 : 60);
+            lens.radius = newIsSmallMobile ? 35 : (newIsMobile ? 35 : 50);
             lens.currentRadius = lens.radius;
             lens.ease = newIsMobile ? 0.15 : 0.08;
             pointer.x = canvas.width / 2;

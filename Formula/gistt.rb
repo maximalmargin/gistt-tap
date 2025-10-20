@@ -3,9 +3,9 @@ class Gistt < Formula
 
   desc "Terminal-native AI email client"
   homepage "https://github.com/maximalmargin/gistt"
-  url "https://github.com/maximalmargin/gistt-tap/releases/download/v0.1.0/gistt-0.1.0.tar.gz"
-  sha256 "e5d54dd819b4b8ea74b4c89aa28430375efd08275c1af39389615204cf4efb3a"
-  version "0.1.0"
+  url "https://github.com/maximalmargin/gistt-tap/releases/download/v0.1.1/gistt-0.1.1.tar.gz"
+  sha256 "7ede0d3d24a8a7861f52b30cbd8ce2bc4a50f4e3b36918e118d2cd7dc70d6cff"
+  version "0.1.1"
   license "MIT"
   head "https://github.com/maximalmargin/gistt", branch: "main"
 

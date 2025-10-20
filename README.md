@@ -86,7 +86,7 @@ gistt
 - `h` — Toggle filter
 - `q` — Quit
 
-By default, we only fetch unread emails in the past 10 days. We also predefine action groups. In the future, users should be able to configure categories and preferences via a simple settings.json file.
+Customization: On first run `gistt` writes a copy of the packaged defaults to `~/.config/gistt/settings.json` so you can tweak preferences. You can modify the rules and conditions to your liking.
 
 ## Contributing
 
@@ -108,6 +108,12 @@ Email <maximalmargin@gmail.com> to ask about contributing. PRs welcome.
 - Squid Game
 - Hilma af Klint
 - Ready Player One
+
+## Release Notes
+
+### 0.1.1
+
+- Add the ability for users to override `settings.json`.
 
 ## Artifact Preview
 
