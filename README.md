@@ -87,6 +87,7 @@ gistt
 - `q` — Quit
 
 Customization: On first run `gistt` writes a copy of the packaged defaults to `~/.config/gistt/settings.json` so you can tweak preferences. You can modify the rules and conditions to your liking.
+Cached summaries include the action group priority as it existed when they were generated; if you change priorities, run `rm ~/.local/share/gistt/gistt_cache.json` to rebuild with the new ordering.
 
 ## Contributing
 
@@ -108,12 +109,6 @@ Email <maximalmargin@gmail.com> to ask about contributing. PRs welcome.
 - Squid Game
 - Hilma af Klint
 - Ready Player One
-
-## Release Notes
-
-### 0.1.1
-
-- Add the ability for users to override `settings.json`.
 
 ## Artifact Preview
 
